@@ -25,12 +25,6 @@ func (s *Server) createCard(ctx *gin.Context) {
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Claims)
 
-	authorID, err := s.store.GetUserID(ctx, authPayload.Username)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
 	var color db.Color
 	switch req.Color {
 	case "red":
@@ -42,7 +36,7 @@ func (s *Server) createCard(ctx *gin.Context) {
 	}
 
 	arg := db.CreateCardParams{
-		Author:  authorID,
+		Author:  authPayload.UserID,
 		Accused: req.Accused,
 		Color:   color,
 		Event:   req.Event,

@@ -28,6 +28,7 @@ type userResponse struct {
 
 func newUserResponse(user db.User) userResponse {
 	return userResponse{
+		ID:        user.ID,
 		Username:  user.Username,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
@@ -35,7 +36,7 @@ func newUserResponse(user db.User) userResponse {
 	}
 }
 
-func (s *Server) createUser(ctx *gin.Context) {
+func (s *Server) registerUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
@@ -72,7 +73,7 @@ func (s *Server) createUser(ctx *gin.Context) {
 	}
 
 	rsp := newUserResponse(user)
-	ctx.JSON(http.StatusOK, rsp)
+	ctx.JSON(http.StatusCreated, rsp)
 }
 
 type loginUserRequest struct {
