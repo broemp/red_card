@@ -6,14 +6,27 @@ INSERT INTO "user" (
 ) RETURNING *;
 
 -- name: ListUser :many
-SELECT username
+SELECT id, username
 FROM "user"
 LIMIT $1
 OFFSET $2;
 
--- name: GetUser :one
+-- name: ListUserFilter :many
+SELECT id, username
+FROM "user"
+WHERE username LIKE CONCAT(sqlc.arg(filter)::text, '%')
+LIMIT $1
+OFFSET $2;
+
+-- name: GetUserAuth :one
 SELECT * FROM "user"
-WHERE username = $1 LIMIT 1;
+WHERE username = $1
+LIMIT 1;
+
+-- name: GetUserByID :one
+SELECT id, username, first_name, last_name FROM "user"
+WHERE id = $1
+LIMIT 1;
 
 -- name: DeleteUser :exec
 DELETE FROM "user"

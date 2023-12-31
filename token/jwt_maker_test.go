@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -30,7 +31,7 @@ func TestJWTMaker(t *testing.T) {
 
 	require.NotZero(t, payload.ID)
 	require.Equal(t, testUser.Username, payload.Username)
-	require.Equal(t, testUser.ID, payload.UserID)
+	require.Equal(t, fmt.Sprint(testUser.ID), payload.Subject)
 	require.WithinDuration(t, issuedAt, payload.IssuedAt.Time, time.Second)
 	require.WithinDuration(t, expiredAt, payload.ExpiresAt.Time, time.Second)
 }

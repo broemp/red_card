@@ -56,13 +56,14 @@ func (q *Queries) DeleteUser(ctx context.Context, dollar_1 interface{}) error {
 	return err
 }
 
-const getUser = `-- name: GetUser :one
+const getUserAuth = `-- name: GetUserAuth :one
 SELECT id, username, first_name, last_name, hashed_password, password_changed_at, deleted_at, created_at FROM "user"
-WHERE username = $1 LIMIT 1
+WHERE username = $1
+LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, username)
+func (q *Queries) GetUserAuth(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserAuth, username)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -73,6 +74,31 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 		&i.PasswordChangedAt,
 		&i.DeletedAt,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, username, first_name, last_name FROM "user"
+WHERE id = $1
+LIMIT 1
+`
+
+type GetUserByIDRow struct {
+	ID        int64          `json:"id"`
+	Username  string         `json:"username"`
+	FirstName sql.NullString `json:"first_name"`
+	LastName  sql.NullString `json:"last_name"`
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserByID, id)
+	var i GetUserByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
 	)
 	return i, err
 }
@@ -91,7 +117,7 @@ func (q *Queries) GetUserID(ctx context.Context, username string) (int64, error)
 }
 
 const listUser = `-- name: ListUser :many
-SELECT username
+SELECT id, username
 FROM "user"
 LIMIT $1
 OFFSET $2
@@ -102,19 +128,66 @@ type ListUserParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]string, error) {
+type ListUserRow struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]ListUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listUser, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []string{}
+	items := []ListUserRow{}
 	for rows.Next() {
-		var username string
-		if err := rows.Scan(&username); err != nil {
+		var i ListUserRow
+		if err := rows.Scan(&i.ID, &i.Username); err != nil {
 			return nil, err
 		}
-		items = append(items, username)
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserFilter = `-- name: ListUserFilter :many
+SELECT id, username
+FROM "user"
+WHERE username LIKE CONCAT($3::text, '%')
+LIMIT $1
+OFFSET $2
+`
+
+type ListUserFilterParams struct {
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+	Filter string `json:"filter"`
+}
+
+type ListUserFilterRow struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) ListUserFilter(ctx context.Context, arg ListUserFilterParams) ([]ListUserFilterRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUserFilter, arg.Limit, arg.Offset, arg.Filter)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUserFilterRow{}
+	for rows.Next() {
+		var i ListUserFilterRow
+		if err := rows.Scan(&i.ID, &i.Username); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

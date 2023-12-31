@@ -2,7 +2,9 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	db "github.com/broemp/red_card/db/sqlc"
 	"github.com/broemp/red_card/token"
@@ -12,7 +14,7 @@ import (
 
 type createCardRequest struct {
 	Color   string        `json:"color" binding:"required,oneof=red yellow blue"`
-	Accused int64         `json:"accused" binding:"required"`
+	Accused string        `json:"accused" binding:"required"`
 	Event   sql.NullInt64 `json:"event"`
 }
 
@@ -35,9 +37,25 @@ func (s *Server) createCard(ctx *gin.Context) {
 		color = db.ColorBlue
 	}
 
+	accusedID, err := s.store.GetUserID(ctx, req.Accused)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Parse Subject string to Int64
+	authorID, err := strconv.ParseInt(authPayload.Subject, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	fmt.Println("Accused ", accusedID)
+	fmt.Println("Author ", authorID)
+
 	arg := db.CreateCardParams{
-		Author:  authPayload.UserID,
-		Accused: req.Accused,
+		Author:  authorID,
+		Accused: accusedID,
 		Color:   color,
 		Event:   req.Event,
 	}

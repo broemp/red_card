@@ -14,12 +14,14 @@ type Querier interface {
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, dollar_1 interface{}) error
-	GetCard(ctx context.Context, id int64) (Card, error)
-	GetUser(ctx context.Context, username string) (User, error)
+	GetCard(ctx context.Context, id int64) (GetCardRow, error)
+	GetUserAuth(ctx context.Context, username string) (User, error)
+	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserID(ctx context.Context, username string) (int64, error)
-	ListCardsFromUserByUsername(ctx context.Context, username string) ([]ListCardsFromUserByUsernameRow, error)
-	ListMostRecentCard(ctx context.Context, arg ListMostRecentCardParams) ([]Card, error)
-	ListUser(ctx context.Context, arg ListUserParams) ([]string, error)
+	ListCardsByUserID(ctx context.Context, accused int64) ([]ListCardsByUserIDRow, error)
+	ListMostRecentCard(ctx context.Context, arg ListMostRecentCardParams) ([]ListMostRecentCardRow, error)
+	ListUser(ctx context.Context, arg ListUserParams) ([]ListUserRow, error)
+	ListUserFilter(ctx context.Context, arg ListUserFilterParams) ([]ListUserFilterRow, error)
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 }
 

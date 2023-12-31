@@ -50,3 +50,11 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+func corsMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if gin.Mode() == gin.DebugMode {
+			ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		}
+	}
+}

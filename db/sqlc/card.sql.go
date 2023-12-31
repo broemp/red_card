@@ -45,17 +45,39 @@ func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, e
 }
 
 const getCard = `-- name: GetCard :one
-SELECT id, author, accused, color, event, created_at FROM "card"
-WHERE id = $1
+SELECT c.id, acc.username as accused_username, acc.first_name as accused_first_name, acc.last_name as accused_last_name,
+aut.username as author_username, aut.first_name as author_first_name, aut.last_name as author_last_name,
+color, event, c.created_at 
+FROM "card" as c
+JOIN "user" as acc on acc.id=c.accused
+JOIN "user" as aut on aut.id=c.author
+WHERE c.id = $1
 `
 
-func (q *Queries) GetCard(ctx context.Context, id int64) (Card, error) {
+type GetCardRow struct {
+	ID               int64          `json:"id"`
+	AccusedUsername  string         `json:"accused_username"`
+	AccusedFirstName sql.NullString `json:"accused_first_name"`
+	AccusedLastName  sql.NullString `json:"accused_last_name"`
+	AuthorUsername   string         `json:"author_username"`
+	AuthorFirstName  sql.NullString `json:"author_first_name"`
+	AuthorLastName   sql.NullString `json:"author_last_name"`
+	Color            Color          `json:"color"`
+	Event            sql.NullInt64  `json:"event"`
+	CreatedAt        sql.NullTime   `json:"created_at"`
+}
+
+func (q *Queries) GetCard(ctx context.Context, id int64) (GetCardRow, error) {
 	row := q.db.QueryRowContext(ctx, getCard, id)
-	var i Card
+	var i GetCardRow
 	err := row.Scan(
 		&i.ID,
-		&i.Author,
-		&i.Accused,
+		&i.AccusedUsername,
+		&i.AccusedFirstName,
+		&i.AccusedLastName,
+		&i.AuthorUsername,
+		&i.AuthorFirstName,
+		&i.AuthorLastName,
 		&i.Color,
 		&i.Event,
 		&i.CreatedAt,
@@ -63,39 +85,41 @@ func (q *Queries) GetCard(ctx context.Context, id int64) (Card, error) {
 	return i, err
 }
 
-const listCardsFromUserByUsername = `-- name: ListCardsFromUserByUsername :many
-SELECT c.id, c.author, c.accused, c.color, c.event , u.username 
+const listCardsByUserID = `-- name: ListCardsByUserID :many
+SELECT c.id, c.author, c.accused, c.color, c.event, c.created_at , u.username as author_username
 FROM "card" as c
 JOIN "user" as u 
 on u.id=c.author
-WHERE username=$1
+WHERE c.accused=$1
 `
 
-type ListCardsFromUserByUsernameRow struct {
-	ID       int64         `json:"id"`
-	Author   int64         `json:"author"`
-	Accused  int64         `json:"accused"`
-	Color    Color         `json:"color"`
-	Event    sql.NullInt64 `json:"event"`
-	Username string        `json:"username"`
+type ListCardsByUserIDRow struct {
+	ID             int64         `json:"id"`
+	Author         int64         `json:"author"`
+	Accused        int64         `json:"accused"`
+	Color          Color         `json:"color"`
+	Event          sql.NullInt64 `json:"event"`
+	CreatedAt      sql.NullTime  `json:"created_at"`
+	AuthorUsername string        `json:"author_username"`
 }
 
-func (q *Queries) ListCardsFromUserByUsername(ctx context.Context, username string) ([]ListCardsFromUserByUsernameRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCardsFromUserByUsername, username)
+func (q *Queries) ListCardsByUserID(ctx context.Context, accused int64) ([]ListCardsByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCardsByUserID, accused)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListCardsFromUserByUsernameRow{}
+	items := []ListCardsByUserIDRow{}
 	for rows.Next() {
-		var i ListCardsFromUserByUsernameRow
+		var i ListCardsByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Author,
 			&i.Accused,
 			&i.Color,
 			&i.Event,
-			&i.Username,
+			&i.CreatedAt,
+			&i.AuthorUsername,
 		); err != nil {
 			return nil, err
 		}
@@ -111,8 +135,13 @@ func (q *Queries) ListCardsFromUserByUsername(ctx context.Context, username stri
 }
 
 const listMostRecentCard = `-- name: ListMostRecentCard :many
-SELECT id, author, accused, color, event, created_at FROM "card"
-ORDER BY created_at DESC
+SELECT c.id, acc.username as accused_username, acc.first_name as accused_first_name, acc.last_name as accused_last_name,
+aut.username as author_username, aut.first_name as author_first_name, aut.last_name as author_last_name,
+color, event, c.created_at 
+FROM "card" as c
+JOIN "user" as acc on acc.id=c.accused
+JOIN "user" as aut on aut.id=c.author
+ORDER BY c.created_at DESC
 LIMIT $1
 OFFSET $2
 `
@@ -122,19 +151,36 @@ type ListMostRecentCardParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListMostRecentCard(ctx context.Context, arg ListMostRecentCardParams) ([]Card, error) {
+type ListMostRecentCardRow struct {
+	ID               int64          `json:"id"`
+	AccusedUsername  string         `json:"accused_username"`
+	AccusedFirstName sql.NullString `json:"accused_first_name"`
+	AccusedLastName  sql.NullString `json:"accused_last_name"`
+	AuthorUsername   string         `json:"author_username"`
+	AuthorFirstName  sql.NullString `json:"author_first_name"`
+	AuthorLastName   sql.NullString `json:"author_last_name"`
+	Color            Color          `json:"color"`
+	Event            sql.NullInt64  `json:"event"`
+	CreatedAt        sql.NullTime   `json:"created_at"`
+}
+
+func (q *Queries) ListMostRecentCard(ctx context.Context, arg ListMostRecentCardParams) ([]ListMostRecentCardRow, error) {
 	rows, err := q.db.QueryContext(ctx, listMostRecentCard, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Card{}
+	items := []ListMostRecentCardRow{}
 	for rows.Next() {
-		var i Card
+		var i ListMostRecentCardRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Author,
-			&i.Accused,
+			&i.AccusedUsername,
+			&i.AccusedFirstName,
+			&i.AccusedLastName,
+			&i.AuthorUsername,
+			&i.AuthorFirstName,
+			&i.AuthorLastName,
 			&i.Color,
 			&i.Event,
 			&i.CreatedAt,

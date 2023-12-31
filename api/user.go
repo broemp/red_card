@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -92,7 +93,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 	}
 
-	user, err := server.store.GetUser(ctx, strings.ToLower(req.Username))
+	user, err := server.store.GetUserAuth(ctx, strings.ToLower(req.Username))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -118,4 +119,89 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		User:        newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
+}
+
+type listUserFilterRequest struct {
+	Filter   string `form:"filter" `
+	PageID   int32  `form:"page_id" binding:"required,min=1"`
+	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
+}
+
+func (server *Server) listUserFilter(ctx *gin.Context) {
+	var req listUserFilterRequest
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.ListUserFilterParams{
+		Filter: req.Filter,
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}
+
+	users, err := server.store.ListUserFilter(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
+}
+
+type getUserRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) getUser(ctx *gin.Context) {
+	var req getUserRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		fmt.Println(req)
+
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserByID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
+}
+
+type getUserCardsRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) getUserCards(ctx *gin.Context) {
+	var req getUserRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		fmt.Println(req)
+
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.ListCardsByUserID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
 }
