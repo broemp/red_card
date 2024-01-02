@@ -8,13 +8,11 @@ import (
 
 type Config struct {
 	// DB Config
-	DBDriver   string `mapstructure:"DB_DRIVER"`
-	DBUser     string `mapstructure:"DB_USER"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	DBAdress   string `mapstructure:"DB_ADDRESS"`
-	DBDatabase string `mapstructure:"DB_DATABASE"`
+	DB_Driver string `mapstructure:"DB_DRIVER"`
+	DB_Source string `mapstructure:"DB_SOURCE"`
 	// Web Configs
-	WebPort string `mapstructure:"WEB_PORT"`
+	WEB_Port      string `mapstructure:"WEB_PORT"`
+	CORS_Frontend string `mapstructure:"CORS_FRONTEND"`
 	// JWT Configs
 	JWT_SECRET   string        `mapstructure:"JWT_SECRET"`
 	JWT_DURATION time.Duration `mapstructure:"JWT_DURATION"`
@@ -26,10 +24,7 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
-	}
+	viper.ReadInConfig()
 
 	err = viper.Unmarshal(&config)
 	return

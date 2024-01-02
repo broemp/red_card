@@ -1,8 +1,8 @@
 -- name: CreateUser :one
 INSERT INTO "user" (
-    username, hashed_password, first_name, last_name
+    username, hashed_password, name
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3 
 ) RETURNING *;
 
 -- name: ListUser :many
@@ -15,6 +15,7 @@ OFFSET $2;
 SELECT id, username
 FROM "user"
 WHERE username LIKE CONCAT(sqlc.arg(filter)::text, '%')
+OR name LIKE CONCAT(sqlc.arg(filter)::text, '%')
 LIMIT $1
 OFFSET $2;
 
@@ -24,7 +25,7 @@ WHERE username = $1
 LIMIT 1;
 
 -- name: GetUserByID :one
-SELECT id, username, first_name, last_name FROM "user"
+SELECT id, username, name FROM "user"
 WHERE id = $1
 LIMIT 1;
 

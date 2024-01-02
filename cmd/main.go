@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/broemp/red_card/api"
@@ -15,8 +16,8 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
-	dbSource := "postgresql://" + config.DBUser + ":" + config.DBPassword + "@" + config.DBAdress + ":5432/" + config.DBDatabase + "?sslmode=disable"
-	conn, err := sql.Open(config.DBDriver, dbSource)
+	fmt.Println(config.DB_Driver)
+	conn, err := sql.Open(config.DB_Driver, config.DB_Source)
 	if err != nil {
 		log.Fatal("could not establish database connection: ", err)
 	}
@@ -27,7 +28,7 @@ func main() {
 		log.Fatal("cannot start server:", err)
 	}
 
-	err = server.Start(config.WebPort)
+	err = server.Start(config.WEB_Port)
 	if err != nil {
 		log.Fatal("cannot start server:", err)
 	}

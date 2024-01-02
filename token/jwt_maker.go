@@ -20,6 +20,7 @@ type JWTMaker struct {
 
 type Claims struct {
 	Username string `json:"username"`
+	Name     string `json:"name"`
 	jwt.RegisteredClaims
 }
 
@@ -38,6 +39,7 @@ func (m *JWTMaker) CreateToken(user db.User, duration time.Duration) (string, er
 
 	claims := Claims{
 		Username: user.Username,
+		Name:     user.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   fmt.Sprint(user.ID),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

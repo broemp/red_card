@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	db "github.com/broemp/red_card/db/sqlc"
 	"github.com/broemp/red_card/util"
@@ -13,26 +14,23 @@ import (
 )
 
 type createUserRequest struct {
-	Username  string `json:"username" binding:"required,alphanum"`
-	Password  string `json:"password" binding:"required,min=8,max=256"`
-	FirstName string `json:"first_name" binding:"max=64" `
-	LastName  string `json:"last_name" binding:"max=64"`
+	Username string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=8,max=256"`
+	Name     string `json:"name" binding:"required,max=64" `
 }
 
 type userResponse struct {
-	ID        int64          `json:"id"`
-	Username  string         `json:"username"`
-	FirstName sql.NullString `json:"first_name"`
-	LastName  sql.NullString `json:"last_name"`
-	CreatedAt sql.NullTime   `json:"created_at"`
+	ID        int64     `json:"id"`
+	Username  string    `json:"username"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func newUserResponse(user db.User) userResponse {
 	return userResponse{
 		ID:        user.ID,
 		Username:  user.Username,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
+		Name:      user.Name,
 		CreatedAt: user.CreatedAt,
 	}
 }
@@ -44,9 +42,6 @@ func (s *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
-	firstName := util.StringToSQLString(req.FirstName)
-	lastName := util.StringToSQLString(req.LastName)
-
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -56,8 +51,7 @@ func (s *Server) registerUser(ctx *gin.Context) {
 	arg := db.CreateUserParams{
 		Username:       strings.ToLower(req.Username),
 		HashedPassword: hashedPassword,
-		FirstName:      firstName,
-		LastName:       lastName,
+		Name:           req.Name,
 	}
 
 	user, err := s.store.CreateUser(ctx, arg)
@@ -177,11 +171,17 @@ func (server *Server) getUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
 	ctx.JSON(http.StatusOK, user)
 }
 
 type getUserCardsRequest struct {
 	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+type getUserCardsResponse struct {
+	Cards []db.ListCardsByUserIDRow         `json:"cards"`
+	Count []db.GetCardColorCountByUserIDRow `json:"count"`
 }
 
 func (server *Server) getUserCards(ctx *gin.Context) {
@@ -194,7 +194,7 @@ func (server *Server) getUserCards(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.ListCardsByUserID(ctx, req.ID)
+	cards, err := server.store.ListCardsByUserID(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -203,5 +203,21 @@ func (server *Server) getUserCards(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+
+	count, err := server.store.GetCardColorCountByUserID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := getUserCardsResponse{
+		Cards: cards,
+		Count: count,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 }

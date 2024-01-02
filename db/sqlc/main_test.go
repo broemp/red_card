@@ -19,8 +19,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("could not load config:", err)
 	}
 
-	dbSource := "postgresql://" + config.DBUser + ":" + config.DBPassword + "@" + config.DBAdress + ":5432/" + config.DBDatabase + "?sslmode=disable"
-	testDB, err := sql.Open(config.DBDriver, dbSource)
+	testDB, err := sql.Open(config.DB_Driver, config.DB_Source)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}

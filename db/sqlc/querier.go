@@ -15,6 +15,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, dollar_1 interface{}) error
 	GetCard(ctx context.Context, id int64) (GetCardRow, error)
+	GetCardColorCountByUserID(ctx context.Context, accused int64) ([]GetCardColorCountByUserIDRow, error)
 	GetUserAuth(ctx context.Context, username string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserID(ctx context.Context, username string) (int64, error)

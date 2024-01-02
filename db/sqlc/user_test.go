@@ -18,8 +18,7 @@ func TestCreateUser(t *testing.T) {
 	arg := CreateUserParams{
 		Username:       util.RandomUsername(),
 		HashedPassword: hashed_password,
-		FirstName:      util.StringToSQLString(util.RandomString(6)),
-		LastName:       util.StringToSQLString(util.RandomString(6)),
+		Name:           util.RandomString(6),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
@@ -28,8 +27,7 @@ func TestCreateUser(t *testing.T) {
 
 	require.Equal(t, arg.Username, user.Username)
 	require.Equal(t, arg.HashedPassword, user.HashedPassword)
-	require.Equal(t, arg.FirstName, user.FirstName)
-	require.Equal(t, arg.LastName, user.LastName)
+	require.Equal(t, arg.Name, user.Name)
 	require.NotZero(t, user.PasswordChangedAt)
 	require.NotZero(t, user.CreatedAt)
 	require.False(t, user.DeletedAt.Valid)

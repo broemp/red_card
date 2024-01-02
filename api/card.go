@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,9 +12,10 @@ import (
 )
 
 type createCardRequest struct {
-	Color   string        `json:"color" binding:"required,oneof=red yellow blue"`
-	Accused string        `json:"accused" binding:"required"`
-	Event   sql.NullInt64 `json:"event"`
+	Color       string `json:"color" binding:"required,oneof=red yellow blue"`
+	Accused     int64  `json:"accused" binding:"required"`
+	Description string `json:"description"`
+	Event       int64  `json:"event"`
 }
 
 func (s *Server) createCard(ctx *gin.Context) {
@@ -37,11 +37,11 @@ func (s *Server) createCard(ctx *gin.Context) {
 		color = db.ColorBlue
 	}
 
-	accusedID, err := s.store.GetUserID(ctx, req.Accused)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// accusedID, err := s.store.GetUserID(ctx, req.Accused)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	// Parse Subject string to Int64
 	authorID, err := strconv.ParseInt(authPayload.Subject, 10, 64)
@@ -50,14 +50,28 @@ func (s *Server) createCard(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("Accused ", accusedID)
-	fmt.Println("Author ", authorID)
+	description := sql.NullString{Valid: false}
+	if req.Description != "" {
+		description = sql.NullString{
+			Valid:  true,
+			String: req.Description,
+		}
+	}
+
+	event := sql.NullInt64{Valid: false}
+	if req.Event != 0 {
+		event = sql.NullInt64{
+			Valid: true,
+			Int64: req.Event,
+		}
+	}
 
 	arg := db.CreateCardParams{
-		Author:  authorID,
-		Accused: accusedID,
-		Color:   color,
-		Event:   req.Event,
+		Author:      authorID,
+		Accused:     req.Accused,
+		Color:       color,
+		Event:       event,
+		Description: description,
 	}
 
 	card, err := s.store.CreateCard(ctx, arg)

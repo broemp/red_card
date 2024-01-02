@@ -55,12 +55,13 @@ func (ns NullColor) Value() (driver.Value, error) {
 }
 
 type Card struct {
-	ID        int64         `json:"id"`
-	Author    int64         `json:"author"`
-	Accused   int64         `json:"accused"`
-	Color     Color         `json:"color"`
-	Event     sql.NullInt64 `json:"event"`
-	CreatedAt sql.NullTime  `json:"created_at"`
+	ID          int64          `json:"id"`
+	Author      int64          `json:"author"`
+	Accused     int64          `json:"accused"`
+	Color       Color          `json:"color"`
+	Description sql.NullString `json:"description"`
+	Event       sql.NullInt64  `json:"event"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 type Comment struct {
@@ -69,7 +70,7 @@ type Comment struct {
 	Author    int64        `json:"author"`
 	Card      int64        `json:"card"`
 	DeletedAt sql.NullTime `json:"deleted_at"`
-	CreatedAt sql.NullTime `json:"created_at"`
+	CreatedAt time.Time    `json:"created_at"`
 }
 
 type Event struct {
@@ -77,7 +78,7 @@ type Event struct {
 	Name      string       `json:"name"`
 	Date      time.Time    `json:"date"`
 	DeletedAt sql.NullTime `json:"deleted_at"`
-	CreatedAt sql.NullTime `json:"created_at"`
+	CreatedAt time.Time    `json:"created_at"`
 }
 
 type EventUser struct {
@@ -86,12 +87,11 @@ type EventUser struct {
 }
 
 type User struct {
-	ID                int64          `json:"id"`
-	Username          string         `json:"username"`
-	FirstName         sql.NullString `json:"first_name"`
-	LastName          sql.NullString `json:"last_name"`
-	HashedPassword    string         `json:"hashed_password"`
-	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
-	DeletedAt         sql.NullTime   `json:"deleted_at"`
-	CreatedAt         sql.NullTime   `json:"created_at"`
+	ID                int64        `json:"id"`
+	Username          string       `json:"username"`
+	Name              string       `json:"name"`
+	HashedPassword    string       `json:"hashed_password"`
+	PasswordChangedAt time.Time    `json:"password_changed_at"`
+	DeletedAt         sql.NullTime `json:"deleted_at"`
+	CreatedAt         time.Time    `json:"created_at"`
 }

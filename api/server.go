@@ -2,10 +2,12 @@ package api
 
 import (
 	"fmt"
+	"time"
 
 	db "github.com/broemp/red_card/db/sqlc"
 	"github.com/broemp/red_card/token"
 	"github.com/broemp/red_card/util"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,7 +37,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 func (s *Server) setupRouter() {
 	router := gin.Default()
-	router.Use(corsMiddleware())
+	addCors(router, s.config)
 	authRoutes := router.Group("/").Use(authMiddleware(s.tokenMaker))
 
 	router.POST("/users/register", s.registerUser)
@@ -58,4 +60,22 @@ func (s *Server) Start(address string) error {
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func addCors(router *gin.Engine, config util.Config) {
+	if gin.Mode() == gin.DebugMode {
+		router.Use(cors.Default())
+		return
+	}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{config.CORS_Frontend},
+		AllowMethods:     []string{"GET", "POST"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "https://github.com"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 }

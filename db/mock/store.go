@@ -115,10 +115,10 @@ func (mr *MockStoreMockRecorder) DeleteUser(arg0, arg1 any) *gomock.Call {
 }
 
 // GetCard mocks base method.
-func (m *MockStore) GetCard(arg0 context.Context, arg1 int64) (db.Card, error) {
+func (m *MockStore) GetCard(arg0 context.Context, arg1 int64) (db.GetCardRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCard", arg0, arg1)
-	ret0, _ := ret[0].(db.Card)
+	ret0, _ := ret[0].(db.GetCardRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -129,56 +129,86 @@ func (mr *MockStoreMockRecorder) GetCard(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCard", reflect.TypeOf((*MockStore)(nil).GetCard), arg0, arg1)
 }
 
-// GetUser mocks base method.
-func (m *MockStore) GetUser(arg0 context.Context, arg1 int64) (db.User, error) {
+// GetCardColorCountByUserID mocks base method.
+func (m *MockStore) GetCardColorCountByUserID(arg0 context.Context, arg1 int64) ([]db.GetCardColorCountByUserIDRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetCardColorCountByUserID", arg0, arg1)
+	ret0, _ := ret[0].([]db.GetCardColorCountByUserIDRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCardColorCountByUserID indicates an expected call of GetCardColorCountByUserID.
+func (mr *MockStoreMockRecorder) GetCardColorCountByUserID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCardColorCountByUserID", reflect.TypeOf((*MockStore)(nil).GetCardColorCountByUserID), arg0, arg1)
+}
+
+// GetUserAuth mocks base method.
+func (m *MockStore) GetUserAuth(arg0 context.Context, arg1 string) (db.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserAuth", arg0, arg1)
 	ret0, _ := ret[0].(db.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUser indicates an expected call of GetUser.
-func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 any) *gomock.Call {
+// GetUserAuth indicates an expected call of GetUserAuth.
+func (mr *MockStoreMockRecorder) GetUserAuth(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserAuth", reflect.TypeOf((*MockStore)(nil).GetUserAuth), arg0, arg1)
 }
 
-// GetUserByUsername mocks base method.
-func (m *MockStore) GetUserByUsername(arg0 context.Context, arg1 string) (db.User, error) {
+// GetUserByID mocks base method.
+func (m *MockStore) GetUserByID(arg0 context.Context, arg1 int64) (db.GetUserByIDRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByUsername", arg0, arg1)
-	ret0, _ := ret[0].(db.User)
+	ret := m.ctrl.Call(m, "GetUserByID", arg0, arg1)
+	ret0, _ := ret[0].(db.GetUserByIDRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserByUsername indicates an expected call of GetUserByUsername.
-func (mr *MockStoreMockRecorder) GetUserByUsername(arg0, arg1 any) *gomock.Call {
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockStoreMockRecorder) GetUserByID(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockStore)(nil).GetUserByUsername), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockStore)(nil).GetUserByID), arg0, arg1)
 }
 
-// ListCardsFromUserByUsername mocks base method.
-func (m *MockStore) ListCardsFromUserByUsername(arg0 context.Context, arg1 string) ([]db.ListCardsFromUserByUsernameRow, error) {
+// GetUserID mocks base method.
+func (m *MockStore) GetUserID(arg0 context.Context, arg1 string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListCardsFromUserByUsername", arg0, arg1)
-	ret0, _ := ret[0].([]db.ListCardsFromUserByUsernameRow)
+	ret := m.ctrl.Call(m, "GetUserID", arg0, arg1)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListCardsFromUserByUsername indicates an expected call of ListCardsFromUserByUsername.
-func (mr *MockStoreMockRecorder) ListCardsFromUserByUsername(arg0, arg1 any) *gomock.Call {
+// GetUserID indicates an expected call of GetUserID.
+func (mr *MockStoreMockRecorder) GetUserID(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCardsFromUserByUsername", reflect.TypeOf((*MockStore)(nil).ListCardsFromUserByUsername), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserID", reflect.TypeOf((*MockStore)(nil).GetUserID), arg0, arg1)
+}
+
+// ListCardsByUserID mocks base method.
+func (m *MockStore) ListCardsByUserID(arg0 context.Context, arg1 int64) ([]db.ListCardsByUserIDRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCardsByUserID", arg0, arg1)
+	ret0, _ := ret[0].([]db.ListCardsByUserIDRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCardsByUserID indicates an expected call of ListCardsByUserID.
+func (mr *MockStoreMockRecorder) ListCardsByUserID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCardsByUserID", reflect.TypeOf((*MockStore)(nil).ListCardsByUserID), arg0, arg1)
 }
 
 // ListMostRecentCard mocks base method.
-func (m *MockStore) ListMostRecentCard(arg0 context.Context, arg1 db.ListMostRecentCardParams) ([]db.Card, error) {
+func (m *MockStore) ListMostRecentCard(arg0 context.Context, arg1 db.ListMostRecentCardParams) ([]db.ListMostRecentCardRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListMostRecentCard", arg0, arg1)
-	ret0, _ := ret[0].([]db.Card)
+	ret0, _ := ret[0].([]db.ListMostRecentCardRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -190,10 +220,10 @@ func (mr *MockStoreMockRecorder) ListMostRecentCard(arg0, arg1 any) *gomock.Call
 }
 
 // ListUser mocks base method.
-func (m *MockStore) ListUser(arg0 context.Context, arg1 db.ListUserParams) ([]string, error) {
+func (m *MockStore) ListUser(arg0 context.Context, arg1 db.ListUserParams) ([]db.ListUserRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListUser", arg0, arg1)
-	ret0, _ := ret[0].([]string)
+	ret0, _ := ret[0].([]db.ListUserRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -202,6 +232,21 @@ func (m *MockStore) ListUser(arg0 context.Context, arg1 db.ListUserParams) ([]st
 func (mr *MockStoreMockRecorder) ListUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUser", reflect.TypeOf((*MockStore)(nil).ListUser), arg0, arg1)
+}
+
+// ListUserFilter mocks base method.
+func (m *MockStore) ListUserFilter(arg0 context.Context, arg1 db.ListUserFilterParams) ([]db.ListUserFilterRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUserFilter", arg0, arg1)
+	ret0, _ := ret[0].([]db.ListUserFilterRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListUserFilter indicates an expected call of ListUserFilter.
+func (mr *MockStoreMockRecorder) ListUserFilter(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserFilter", reflect.TypeOf((*MockStore)(nil).ListUserFilter), arg0, arg1)
 }
 
 // UpdatePassword mocks base method.

@@ -7,37 +7,29 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO "user" (
-    username, hashed_password, first_name, last_name
+    username, hashed_password, name
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, username, first_name, last_name, hashed_password, password_changed_at, deleted_at, created_at
+    $1, $2, $3 
+) RETURNING id, username, name, hashed_password, password_changed_at, deleted_at, created_at
 `
 
 type CreateUserParams struct {
-	Username       string         `json:"username"`
-	HashedPassword string         `json:"hashed_password"`
-	FirstName      sql.NullString `json:"first_name"`
-	LastName       sql.NullString `json:"last_name"`
+	Username       string `json:"username"`
+	HashedPassword string `json:"hashed_password"`
+	Name           string `json:"name"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.Username,
-		arg.HashedPassword,
-		arg.FirstName,
-		arg.LastName,
-	)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.HashedPassword, arg.Name)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.DeletedAt,
@@ -57,7 +49,7 @@ func (q *Queries) DeleteUser(ctx context.Context, dollar_1 interface{}) error {
 }
 
 const getUserAuth = `-- name: GetUserAuth :one
-SELECT id, username, first_name, last_name, hashed_password, password_changed_at, deleted_at, created_at FROM "user"
+SELECT id, username, name, hashed_password, password_changed_at, deleted_at, created_at FROM "user"
 WHERE username = $1
 LIMIT 1
 `
@@ -68,8 +60,7 @@ func (q *Queries) GetUserAuth(ctx context.Context, username string) (User, error
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.DeletedAt,
@@ -79,27 +70,21 @@ func (q *Queries) GetUserAuth(ctx context.Context, username string) (User, error
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name FROM "user"
+SELECT id, username, name FROM "user"
 WHERE id = $1
 LIMIT 1
 `
 
 type GetUserByIDRow struct {
-	ID        int64          `json:"id"`
-	Username  string         `json:"username"`
-	FirstName sql.NullString `json:"first_name"`
-	LastName  sql.NullString `json:"last_name"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
 	var i GetUserByIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.FirstName,
-		&i.LastName,
-	)
+	err := row.Scan(&i.ID, &i.Username, &i.Name)
 	return i, err
 }
 
@@ -160,6 +145,7 @@ const listUserFilter = `-- name: ListUserFilter :many
 SELECT id, username
 FROM "user"
 WHERE username LIKE CONCAT($3::text, '%')
+OR name LIKE CONCAT($3::text, '%')
 LIMIT $1
 OFFSET $2
 `

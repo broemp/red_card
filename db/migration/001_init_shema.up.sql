@@ -7,12 +7,11 @@ CREATE TYPE "color" AS ENUM (
 CREATE TABLE "user" (
   "id" bigserial PRIMARY KEY,
   "username" varchar(255) UNIQUE NOT NULL,
-  "first_name" varchar(64),
-  "last_name" varchar(64),
+  "name" varchar(64) NOT NULL,
   "hashed_password" varchar(255) NOT NULL,
-  "password_changed_at" timestamp DEFAULT (now()),
+  "password_changed_at" timestamp  NOT NULL DEFAULT (now()),
   "deleted_at" timestamp,
-  "created_at" timestamp DEFAULT (now())
+  "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "card" (
@@ -20,8 +19,9 @@ CREATE TABLE "card" (
   "author" bigint NOT NULL,
   "accused" bigint NOT NULL,
   "color" color NOT NULL,
+  "description" varchar(255),
   "event" bigint,
-  "created_at" timestamp DEFAULT (now())
+  "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "comment" (
@@ -30,7 +30,7 @@ CREATE TABLE "comment" (
   "author" bigint NOT NULL,
   "card" bigint NOT NULL,
   "deleted_at" timestamp,
-  "created_at" timestamp DEFAULT (now())
+  "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "event" (
@@ -38,7 +38,7 @@ CREATE TABLE "event" (
   "name" varchar(255) NOT NULL,
   "date" date NOT NULL,
   "deleted_at" timestamp,
-  "created_at" timestamp DEFAULT (now())
+  "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE INDEX ON "user" ("username");
