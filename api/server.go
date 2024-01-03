@@ -63,19 +63,20 @@ func errorResponse(err error) gin.H {
 }
 
 func addCors(router *gin.Engine, config util.Config) {
-	if gin.Mode() == gin.DebugMode {
-		router.Use(cors.Default())
+	if config.CORS_Enable {
+		if config.CORS_Frontend == "" {
+			fmt.Println("Failed to read Allowed Origin. Please Provide Origion via CORS_Frontend!")
+			router.Use(cors.Default())
+		}
+
+		router.Use(cors.New(cors.Config{
+			AllowOrigins:     []string{config.CORS_Frontend},
+			AllowMethods:     []string{"*"},
+			AllowHeaders:     []string{"*"},
+			ExposeHeaders:    []string{"*"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}))
 		return
 	}
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{config.CORS_Frontend},
-		AllowMethods:     []string{"GET", "POST"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "https://github.com"
-		},
-		MaxAge: 12 * time.Hour,
-	}))
 }

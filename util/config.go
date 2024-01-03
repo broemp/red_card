@@ -13,6 +13,7 @@ type Config struct {
 	// Web Configs
 	WEB_Port      string `mapstructure:"WEB_PORT"`
 	CORS_Frontend string `mapstructure:"CORS_FRONTEND"`
+	CORS_Enable   bool   `mapstructure:"CORS_ENABLE"`
 	// JWT Configs
 	JWT_SECRET   string        `mapstructure:"JWT_SECRET"`
 	JWT_DURATION time.Duration `mapstructure:"JWT_DURATION"`
