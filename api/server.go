@@ -39,7 +39,7 @@ func (s *Server) setupRouter() {
 	if s.config.CORS_Enable {
 		addCors(router, s.config)
 	}
-	authRoutes := router.Group("/").Use(authMiddleware(s.tokenMaker))
+	authRoutes := router.Group("").Use(authMiddleware(s.tokenMaker))
 
 	router.POST("/users/register", s.createUser)
 	router.POST("/users/login", s.loginUser)
@@ -75,5 +75,4 @@ func addCors(router *gin.Engine, config util.Config) {
 	}
 
 	router.Use(cors.New(cors_config))
-	return
 }
