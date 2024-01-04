@@ -12,7 +12,7 @@ LIMIT $1
 OFFSET $2;
 
 -- name: ListUserFilter :many
-SELECT id, username
+SELECT id, username, name
 FROM "user"
 WHERE username LIKE CONCAT(sqlc.arg(filter)::text, '%')
 OR name LIKE CONCAT(sqlc.arg(filter)::text, '%')

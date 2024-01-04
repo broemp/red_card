@@ -142,7 +142,7 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]ListUserR
 }
 
 const listUserFilter = `-- name: ListUserFilter :many
-SELECT id, username
+SELECT id, username, name
 FROM "user"
 WHERE username LIKE CONCAT($3::text, '%')
 OR name LIKE CONCAT($3::text, '%')
@@ -159,6 +159,7 @@ type ListUserFilterParams struct {
 type ListUserFilterRow struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
+	Name     string `json:"name"`
 }
 
 func (q *Queries) ListUserFilter(ctx context.Context, arg ListUserFilterParams) ([]ListUserFilterRow, error) {
@@ -170,7 +171,7 @@ func (q *Queries) ListUserFilter(ctx context.Context, arg ListUserFilterParams) 
 	items := []ListUserFilterRow{}
 	for rows.Next() {
 		var i ListUserFilterRow
-		if err := rows.Scan(&i.ID, &i.Username); err != nil {
+		if err := rows.Scan(&i.ID, &i.Username, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
