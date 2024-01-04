@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	db "github.com/broemp/red_card/db/sqlc"
 	"github.com/broemp/red_card/util"
@@ -13,19 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
-
-type createUserRequest struct {
-	Username string `json:"username" binding:"required,alphanum"`
-	Password string `json:"password" binding:"required,min=8,max=256"`
-	Name     string `json:"name" binding:"required,max=64" `
-}
-
-type userResponse struct {
-	ID        int64     `json:"id"`
-	Username  string    `json:"username"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-}
 
 func newUserResponse(user db.User) userResponse {
 	return userResponse{
@@ -72,20 +58,6 @@ func (s *Server) createUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, rsp)
 }
 
-type loginUserRequest struct {
-	Username string `json:"username" binding:"required,alphanum"`
-	Password string `json:"password" binding:"required,min=8,max=256"`
-}
-
-type loginUserResponse struct {
-	SessionID             uuid.UUID    `json:"session_id"`
-	AccessToken           string       `json:"access_token"`
-	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
-	RefreshToken          string       `json:"refresh_token"`
-	RefressTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
-	User                  userResponse `json:"user"`
-}
-
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBind(&req); err != nil {
@@ -130,8 +102,8 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		ID:           payloadID,
 		UserID:       user.ID,
 		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIp:     "",
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
 		IsBlocked:    false,
 		ExpiresAt:    refreshPayload.ExpiresAt.Time,
 	})
@@ -149,12 +121,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		User:                  newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
-}
-
-type listUserFilterRequest struct {
-	Filter   string `form:"filter" `
-	PageID   int32  `form:"page_id" binding:"required,min=1"`
-	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
 func (server *Server) listUserFilter(ctx *gin.Context) {
@@ -184,10 +150,6 @@ func (server *Server) listUserFilter(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
-type getUserRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
 func (server *Server) getUser(ctx *gin.Context) {
 	var req getUserRequest
 
@@ -209,51 +171,4 @@ func (server *Server) getUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
-}
-
-type getUserCardsRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-type getUserCardsResponse struct {
-	Cards []db.ListCardsByUserIDRow         `json:"cards"`
-	Count []db.GetCardColorCountByUserIDRow `json:"count"`
-}
-
-func (server *Server) getUserCards(ctx *gin.Context) {
-	var req getUserRequest
-
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		fmt.Println(req)
-
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	cards, err := server.store.ListCardsByUserID(ctx, req.ID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	count, err := server.store.GetCardColorCountByUserID(ctx, req.ID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	rsp := getUserCardsResponse{
-		Cards: cards,
-		Count: count,
-	}
-
-	ctx.JSON(http.StatusOK, rsp)
 }

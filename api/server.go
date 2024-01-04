@@ -43,8 +43,10 @@ func (s *Server) setupRouter() {
 
 	router.POST("/users/register", s.createUser)
 	router.POST("/users/login", s.loginUser)
+	router.POST("/refresh_token", s.renewAccessToken)
+
 	router.GET("/users/:id", s.getUser)
-	router.GET("/users/:id/cards", s.getUserCards)
+	router.GET("/users/:id/cards", s.getCardsFromUser)
 	authRoutes.GET("/users/", s.listUserFilter)
 
 	router.GET("/cards", s.listCard)
