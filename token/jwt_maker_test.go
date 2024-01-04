@@ -21,9 +21,10 @@ func TestJWTMaker(t *testing.T) {
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := maker.CreateToken(testUser, duration)
+	token, claims, err := maker.CreateToken(testUser, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, claims)
 
 	payload, err := maker.VerifyToken(token)
 	require.NoError(t, err)
@@ -40,9 +41,10 @@ func TestExpiredJWTToken(t *testing.T) {
 	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
 
-	token, err := maker.CreateToken(createTestUser(), -time.Minute)
+	token, claims, err := maker.CreateToken(createTestUser(), -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, claims)
 
 	payload, err := maker.VerifyToken(token)
 	require.Error(t, err)

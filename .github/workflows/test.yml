@@ -35,14 +35,7 @@ jobs:
 
       - name: "Create env file"
         run: |
-          touch .env
-          echo DB_DRIVER=postgres >> .env
-          echo DB_SOURCE=postgresql://cards:cards@localhost:5432/cards?sslmode=disable >> .env
-          echo WEB_PORT=3000 >> .env
-          echo JWT_SECRET=123456789012345678901234567890123 >> .env
-          echo JWT_DURATION=24h >> .env
-          echo CORS_ENABLE=false >> .env
-          echo CORS_FRONTEND= >> .env
+          echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2

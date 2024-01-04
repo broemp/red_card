@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"time"
 
 	db "github.com/broemp/red_card/db/sqlc"
 	"github.com/broemp/red_card/token"
@@ -37,10 +36,12 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 func (s *Server) setupRouter() {
 	router := gin.Default()
-	addCors(router, s.config)
+	if s.config.CORS_Enable {
+		addCors(router, s.config)
+	}
 	authRoutes := router.Group("/").Use(authMiddleware(s.tokenMaker))
 
-	router.POST("/users/register", s.registerUser)
+	router.POST("/users/register", s.createUser)
 	router.POST("/users/login", s.loginUser)
 	router.GET("/users/:id", s.getUser)
 	router.GET("/users/:id/cards", s.getUserCards)
@@ -63,20 +64,16 @@ func errorResponse(err error) gin.H {
 }
 
 func addCors(router *gin.Engine, config util.Config) {
-	if config.CORS_Enable {
-		if config.CORS_Frontend == "" {
-			fmt.Println("Failed to read Allowed Origin. Please Provide Origion via CORS_Frontend!")
-			router.Use(cors.Default())
-		}
+	cors_config := cors.DefaultConfig()
+	cors_config.AllowCredentials = true
 
-		router.Use(cors.New(cors.Config{
-			AllowOrigins:     []string{config.CORS_Frontend},
-			AllowMethods:     []string{"*"},
-			AllowHeaders:     []string{"*"},
-			ExposeHeaders:    []string{"*"},
-			AllowCredentials: true,
-			MaxAge:           12 * time.Hour,
-		}))
-		return
+	if config.CORS_Allowed == "" {
+		fmt.Println("Failed to read Allowed Origin. Allowing all Origins. Please Provide Origion via env CORS_ALLOWED!")
+		cors_config.AllowAllOrigins = true
+	} else {
+		cors_config.AllowOrigins = []string{config.CORS_Allowed}
 	}
+
+	router.Use(cors.New(cors_config))
+	return
 }

@@ -22,7 +22,7 @@ func addAuthorization(
 	username string,
 	duration time.Duration,
 ) {
-	token, err := tokenMaker.CreateToken(
+	token, _, err := tokenMaker.CreateToken(
 		db.User{
 			ID:       util.RandomInt(0, 999999),
 			Username: util.RandomUsername(),

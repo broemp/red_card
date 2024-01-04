@@ -29,8 +29,8 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 	return maker, nil
 }
 
-func (m *PasteoMaker) CreateToken(user db.User, duration time.Duration) (string, error) {
-	return "", ErrNotImplementedYet
+func (m *PasteoMaker) CreateToken(user db.User, duration time.Duration) (string, *Claims, error) {
+	return "", nil, ErrNotImplementedYet
 }
 
 func (m *PasteoMaker) VerifyToken(token string) (*Claims, error) {
